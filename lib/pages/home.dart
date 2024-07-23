@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:rbl_app/pages/utils/expiry_formatter.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,8 +18,48 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  TextEditingController cardController = TextEditingController();
+  TextEditingController dateController = TextEditingController();
+  TextEditingController cvvController = TextEditingController();
   File? frontDocument;
   File? backDocument;
+  String deviceInfo = "Loading device info...";
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getDeviceInfo();
+  }
+
+  Future<void> getDeviceInfo() async {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    String info = '';
+
+    try {
+      if (Platform.isAndroid) {
+        AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+        info = 'Device: ${androidInfo.model}\n'
+            'Manufacturer: ${androidInfo.manufacturer}\n'
+            'Android version: ${androidInfo.version.release}';
+
+        print("this is info: ${androidInfo.model}");
+      } else if (Platform.isIOS) {
+        IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
+        info = 'Device: ${iosInfo.utsname.machine}\n'
+            'OS: ${iosInfo.systemName} ${iosInfo.systemVersion} \n'
+            'Model: ${iosInfo.model}\n'
+            "Identifier; ${iosInfo.identifierForVendor}";
+        ;
+      }
+    } catch (e) {
+      info = 'Failed to get device info: ${e.toString()}';
+    }
+
+    setState(() {
+      deviceInfo = info;
+    });
+  }
 
   Future<void> pickDocument(bool isFront) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -29,6 +74,86 @@ class _HomePageState extends State<HomePage> {
         } else {
           backDocument = File(result.files.single.path!);
         }
+      });
+    }
+  }
+
+  Future<void> uploadData() async {
+    if (frontDocument == null || backDocument == null) {
+      return showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Please upload both documents'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('OK'))
+              ],
+            );
+          });
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+      // Upload front document
+      // String frontDocPath =
+      //     'documents/front/${DateTime.now().millisecondsSinceEpoch}_${frontDocument!.path.split('/').last}';
+      // await FirebaseStorage.instance.ref(frontDocPath).putFile(frontDocument!);
+
+      // Upload back document
+      // String backDocPath =
+      //     'documents/back/${DateTime.now().millisecondsSinceEpoch}_${backDocument!.path.split('/').last}';
+      // await FirebaseStorage.instance.ref(backDocPath).putFile(backDocument!);
+
+      // Save metadata to Firestore
+      await FirebaseFirestore.instance.collection('user_data').add({
+        'device_info': deviceInfo,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Data uploaded successfully'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('OK'))
+              ],
+            );
+          });
+
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error is $e");
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Failed to upload data: $e'),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text('OK'))
+              ],
+            );
+          });
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Failed to upload data: $e')),
+      // );
+      setState(() {
+        isLoading = false;
       });
     }
   }
@@ -151,6 +276,7 @@ class _HomePageState extends State<HomePage> {
                                       color: Colors.black),
                                 ),
                                 TextFormField(
+                                  controller: cardController,
                                   enabled: true,
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
@@ -185,6 +311,7 @@ class _HomePageState extends State<HomePage> {
                                                 color: Colors.black),
                                           ),
                                           TextFormField(
+                                            controller: dateController,
                                             keyboardType: TextInputType.number,
                                             inputFormatters: [
                                               DateInputFormatter(),
@@ -224,6 +351,7 @@ class _HomePageState extends State<HomePage> {
                                                 color: Colors.black),
                                           ),
                                           TextFormField(
+                                            controller: cvvController,
                                             keyboardType: TextInputType.number,
                                             obscureText: true,
                                             inputFormatters: [
@@ -285,13 +413,17 @@ class _HomePageState extends State<HomePage> {
                     ),
                     const SizedBox(height: 20.0),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        uploadData();
+                      },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.blue,
                         minimumSize: const Size(double.infinity, 50),
                       ),
-                      child: const Text('SUBMIT'),
+                      child: isLoading
+                          ? CircularProgressIndicator()
+                          : Text('SUBMIT'),
                     ),
                   ],
                 ),

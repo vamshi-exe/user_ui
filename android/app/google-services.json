@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "475613852763",
+    "project_id": "user-app-4567c",
+    "storage_bucket": "user-app-4567c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475613852763:android:a68c707282bd30bc33fb7e",
+        "android_client_info": {
+          "package_name": "com.example.rbl_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4uN8_hIHXTXdNAIzkTfOKqbT3PNloLnU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

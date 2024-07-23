@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:rbl_app/pages/utils/expiry_formatter.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -148,51 +150,97 @@ class _HomePageState extends State<HomePage> {
                                       fontWeight: FontWeight.w500,
                                       color: Colors.black),
                                 ),
-                                TextField(
+                                TextFormField(
+                                  enabled: true,
                                   keyboardType: TextInputType.number,
                                   inputFormatters: [
-                                    LengthLimitingTextInputFormatter(16),
+                                    CreditCardNumberInputFormatter(),
+                                    LengthLimitingTextInputFormatter(19),
                                   ],
                                   decoration: const InputDecoration(
                                     border: InputBorder.none,
-                                    isDense: false,
+                                    prefixIconConstraints: BoxConstraints(
+                                        minWidth: 23, maxHeight: 20),
+                                    prefixIcon: Padding(
+                                      padding: EdgeInsets.only(right: 20),
+                                      child: Icon(
+                                        Icons.credit_card,
+                                      ),
+                                    ),
                                     hintText: "XXXX-XXXX-XXXX-XXXX",
-                                    prefixIcon: Icon(Icons.credit_card),
                                   ),
-                                ),
-                                SizedBox(
-                                  height: 20,
                                 ),
                                 Row(
                                   children: <Widget>[
                                     Expanded(
-                                      child: TextField(
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          DateInputFormatter(),
-                                          LengthLimitingTextInputFormatter(5),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Expiry Date',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.black),
+                                          ),
+                                          TextFormField(
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [
+                                              DateInputFormatter(),
+                                              LengthLimitingTextInputFormatter(
+                                                  5),
+                                            ],
+                                            decoration: const InputDecoration(
+                                              prefixIconConstraints:
+                                                  BoxConstraints(
+                                                      minWidth: 23,
+                                                      maxHeight: 20),
+                                              border: InputBorder.none,
+                                              hintText: "00/00",
+                                              prefixIcon: Padding(
+                                                padding:
+                                                    EdgeInsets.only(right: 20),
+                                                child: Icon(
+                                                  Icons.calendar_month,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ],
-                                        decoration: const InputDecoration(
-                                          border: InputBorder.none,
-                                          labelText: 'Expiry Date',
-                                          prefixIcon:
-                                              Icon(Icons.calendar_today),
-                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 20.0),
                                     Expanded(
-                                      child: TextField(
-                                        keyboardType: TextInputType.number,
-                                        obscureText: true,
-                                        inputFormatters: [
-                                          LengthLimitingTextInputFormatter(3),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'CVV',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black),
+                                          ),
+                                          TextFormField(
+                                            keyboardType: TextInputType.number,
+                                            obscureText: true,
+                                            inputFormatters: [
+                                              LengthLimitingTextInputFormatter(
+                                                  3),
+                                            ],
+                                            decoration: const InputDecoration(
+                                              prefixIconConstraints:
+                                                  BoxConstraints(
+                                                      minWidth: 23,
+                                                      maxHeight: 20),
+                                              hintText: "123",
+                                              border: InputBorder.none,
+                                              prefixIcon: Icon(Icons.lock),
+                                            ),
+                                          ),
                                         ],
-                                        decoration: const InputDecoration(
-                                          border: InputBorder.none,
-                                          labelText: 'CVV',
-                                          prefixIcon: Icon(Icons.lock),
-                                        ),
                                       ),
                                     ),
                                   ],
@@ -200,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           )
                         ],
@@ -212,34 +260,38 @@ class _HomePageState extends State<HomePage> {
                           height: 200, fit: BoxFit.cover),
                     ElevatedButton(
                       onPressed: () => pickDocument(true),
-                      child: const Text('UPLOAD FRONT DOCUMENTS'),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.grey[200],
                         minimumSize: const Size(double.infinity, 50),
                       ),
+                      child: Text(frontDocument != null
+                          ? "Re-Take"
+                          : 'UPLOAD FRONT DOCUMENTS'),
                     ),
                     const SizedBox(height: 10.0),
                     if (backDocument != null)
                       Image.file(backDocument!, height: 200, fit: BoxFit.cover),
                     ElevatedButton(
                       onPressed: () => pickDocument(false),
-                      child: const Text('UPLOAD BACK DOCUMENTS'),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.black,
                         backgroundColor: Colors.grey[200],
                         minimumSize: const Size(double.infinity, 50),
                       ),
+                      child: Text(backDocument != null
+                          ? "Re-Take"
+                          : 'UPLOAD BACK DOCUMENTS'),
                     ),
                     const SizedBox(height: 20.0),
                     ElevatedButton(
                       onPressed: () {},
-                      child: const Text('SUBMIT'),
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.blue,
                         minimumSize: const Size(double.infinity, 50),
                       ),
+                      child: const Text('SUBMIT'),
                     ),
                   ],
                 ),

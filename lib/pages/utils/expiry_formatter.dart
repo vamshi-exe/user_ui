@@ -26,3 +26,30 @@ class DateInputFormatter extends TextInputFormatter {
     return newValue;
   }
 }
+
+class CreditCardNumberInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Replace any non-digit characters
+    String newText = newValue.text.replaceAll(RegExp(r'\D'), '');
+
+    // Insert dashes after every four digits
+    String formattedText = '';
+    for (int i = 0; i < newText.length; i++) {
+      if (i > 0 && i % 4 == 0) {
+        formattedText += '-';
+      }
+      formattedText += newText[i];
+    }
+
+    // Determine the correct cursor position
+    int selectionIndex = formattedText.length;
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: selectionIndex),
+    );
+  }
+}
